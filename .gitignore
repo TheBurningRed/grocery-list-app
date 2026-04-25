@@ -1,0 +1,70 @@
+# Dependencies
+node_modules/
+.pnp/
+.pnp.*
+
+# Package manager caches
+.npm/
+.yarn/
+.pnpm-store/
+
+# Nx / Angular caches
+.nx/
+.angular/
+.nx/polygraph
+
+# Build outputs
+dist/
+build/
+out/
+coverage/
+tmp/
+temp/
+
+# Test / automation artifacts
+__screenshots__/
+playwright-report/
+test-results/
+.vitest/
+.nyc_output/
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Environment files
+.env
+.env.*
+!.env.example
+!.env.sample
+
+# IDE / editor files
+.idea/
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+*.swp
+*.swo
+.DS_Store
+
+# TypeScript / tooling
+*.tsbuildinfo
+.eslintcache
+
+# AI / agent local files
+.agents/
+.claude/worktrees/
+.claude/settings.local.json
+.cursor/
+
+# Husky generated files
+.husky/_/
+
+# Misc local files
+*.local
+
