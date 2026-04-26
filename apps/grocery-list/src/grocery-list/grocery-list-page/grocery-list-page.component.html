@@ -17,6 +17,7 @@
             <section aria-labelledby="grocery-list-title">
                 <app-grocery-list
                         [groceryListItems]="groceryList()"
+                        [loadState]="groceryListLoadState()"
                         (itemQuantityChanged)="updateItemQuantity($event)"
                         (itemBoughtChanged)="updateItemIsBought($event)"
                         (itemDeleteClicked)="deleteItemDialog($event)"

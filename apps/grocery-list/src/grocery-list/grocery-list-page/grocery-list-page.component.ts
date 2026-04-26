@@ -11,7 +11,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { GroceryListService } from '../grocery-list.service';
 import { GroceryListItem } from 'interfaces';
-import { GroceryListComponent } from '../grocery-list/grocery-list.component';
+import { GroceryListComponent, GroceryListLoadState } from '../grocery-list/grocery-list.component';
 import { MatButton } from '@angular/material/button';
 import { MatIcon } from '@angular/material/icon';
 import { GroceryItemQuantityUpdate } from '../grocery-list-item-quantity-update.interface';
@@ -49,6 +49,7 @@ export class GroceryListPageComponent implements OnInit {
   private readonly groceryListItemQuantityUpdated$ = new Subject<GroceryListItem>();
 
   readonly groceryList = signal<GroceryListItem[]>([]);
+  readonly groceryListLoadState = signal<GroceryListLoadState>('loading');
 
   ngOnInit(): void {
     this.fetchGroceryList();
@@ -56,15 +57,18 @@ export class GroceryListPageComponent implements OnInit {
   }
 
   fetchGroceryList(): void {
+    this.groceryListLoadState.set('loading');
+
     this.groceryListService
       .fetchGroceryList()
       .pipe(
         repeat({ delay: () => this.groceriesUpdated$ }),
-        catchError(() => this.handleError('Could not load the grocery list.')),
+        catchError(() => this.handleLoadError('Could not load the grocery list.')),
         takeUntilDestroyed(this.destroyRef),
       )
       .subscribe((groceryList) => {
         this.groceryList.set(groceryList);
+        this.groceryListLoadState.set('loaded');
       });
   }
 
@@ -171,6 +175,16 @@ export class GroceryListPageComponent implements OnInit {
         takeUntilDestroyed(this.destroyRef),
       )
       .subscribe(() => this.groceriesUpdated$.next());
+  }
+
+  private handleLoadError(message: string): Observable<never> {
+    this.groceryListLoadState.set('error');
+
+    this.snackBar.open(message, 'Dismiss', {
+      duration: 5000,
+    });
+
+    return EMPTY;
   }
 
   private handleError(message: string): Observable<never> {

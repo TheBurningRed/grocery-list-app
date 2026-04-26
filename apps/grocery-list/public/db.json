@@ -2,18 +2,19 @@
   "grocery-list": [
     {
       "name": "Test",
-      "quantity": 2,
+      "quantity": 3,
       "id": "45ZD1G_kvxo",
       "isBought": true
     },
     {
-      "name": "Juice",
+      "name": "Juice2",
       "quantity": 2,
+      "isBought": false,
       "id": "Ndz-pX0UIbc"
     },
     {
       "name": "Test2",
-      "quantity": 9,
+      "quantity": 11,
       "isBought": true,
       "id": "N2tohac8Wa0"
     },
@@ -25,9 +26,9 @@
     },
     {
       "name": "Add",
-      "quantity": 111,
-      "id": "Toup44NJSys",
-      "isBought": true
+      "quantity": 13,
+      "isBought": true,
+      "id": "Toup44NJSys"
     }
   ],
   "$schema": "./node_modules/json-server/schema.json"
