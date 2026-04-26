@@ -1,19 +1,28 @@
-<div class="page-content grocery-list-page">
+<main class="page-content grocery-list-page">
     <mat-card appearance="outlined">
         <mat-card-header>
             <div class="card-title">
-                <mat-card-title>My groceries list</mat-card-title>
-                <button matButton="filled" (click)="createItemDialog()">Add item <mat-icon>add</mat-icon></button>
+                <mat-card-title id="grocery-list-title">My groceries list</mat-card-title>
+                <button
+                        matButton="filled"
+                        type="button"
+                        aria-label="Add a new grocery item"
+                        (click)="createItemDialog()">
+                    Add item
+                    <mat-icon aria-hidden="true">add</mat-icon>
+                </button>
             </div>
         </mat-card-header>
         <mat-card-content>
-            <app-grocery-list
-                    [groceryListItems]="groceryList()"
-                    (itemQuantityChanged)="updateItemQuantity($event)"
-                    (itemBoughtChanged)="updateItemIsBought($event)"
-                    (itemDeleteClicked)="deleteItemDialog($event)"
-                    (itemEditClicked)="editItemDialog($event)">
-            </app-grocery-list>
+            <section aria-labelledby="grocery-list-title">
+                <app-grocery-list
+                        [groceryListItems]="groceryList()"
+                        (itemQuantityChanged)="updateItemQuantity($event)"
+                        (itemBoughtChanged)="updateItemIsBought($event)"
+                        (itemDeleteClicked)="deleteItemDialog($event)"
+                        (itemEditClicked)="editItemDialog($event)">
+                </app-grocery-list>
+            </section>
         </mat-card-content>
     </mat-card>
-</div>
+</main>

@@ -9,9 +9,9 @@ import { GroceryListItem, GroceryListItemDraft } from 'interfaces';
   providedIn: 'root',
 })
 export class ApiClientService {
-  httpClient = inject(HttpClient);
+  private readonly httpClient = inject(HttpClient);
 
-  apiUrl = inject(API_URL);
+  private readonly apiUrl = inject(API_URL);
 
   fetchGroceryList(): Observable<GroceryListItem[]> {
     return this.httpClient.get<GroceryListItem[]>(`${this.apiUrl}/grocery-list`);

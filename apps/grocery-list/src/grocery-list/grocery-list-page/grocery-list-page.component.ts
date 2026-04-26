@@ -21,6 +21,8 @@ import {
   debounceTime,
   EMPTY,
   filter,
+  groupBy,
+  mergeMap,
   Observable,
   repeat,
   Subject,
@@ -57,7 +59,6 @@ export class GroceryListPageComponent implements OnInit {
     this.groceryListService
       .fetchGroceryList()
       .pipe(
-        // refetch on any update, verifies optimistic updates complete, rollback in case of failure
         repeat({ delay: () => this.groceriesUpdated$ }),
         catchError(() => this.handleError('Could not load the grocery list.')),
         takeUntilDestroyed(this.destroyRef),
@@ -70,15 +71,20 @@ export class GroceryListPageComponent implements OnInit {
   private saveQuantityUpdates(): void {
     this.groceryListItemQuantityUpdated$
       .pipe(
-        debounceTime(500),
-        switchMap((item) =>
-          this.groceryListService
-            .updateGroceryListItem(item)
-            .pipe(catchError(() => this.handleError('Could not update the item quantity.'))),
+        groupBy((item) => item.id),
+        mergeMap((itemUpdates$) =>
+          itemUpdates$.pipe(
+            debounceTime(500),
+            switchMap((item) =>
+              this.groceryListService
+                .updateGroceryListItem(item)
+                .pipe(catchError(() => this.handleError('Could not update the item quantity.'))),
+            ),
+          ),
         ),
         takeUntilDestroyed(this.destroyRef),
       )
-      .subscribe(() => this.groceriesUpdated$.next());
+      .subscribe();
   }
 
   editItemDialog(groceryListItem: GroceryListItem): void {
@@ -171,6 +177,9 @@ export class GroceryListPageComponent implements OnInit {
     this.snackBar.open(message, 'Dismiss', {
       duration: 5000,
     });
+
+    // refetch and rollback state in case of failure
+    this.groceriesUpdated$.next();
 
     return EMPTY;
   }

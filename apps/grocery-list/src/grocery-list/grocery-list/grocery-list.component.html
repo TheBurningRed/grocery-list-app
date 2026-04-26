@@ -1,15 +1,21 @@
 @if (!groceryListItems().length) {
-    No items in the list yet
+    <p class="empty-list-message" aria-live="polite">
+        No items in the list yet
+    </p>
 }
 
-@for (item of groceryListItems(); track item.id) {
-    <div class="item">
-        <app-grocery-list-item
-                [item]="item"
-                (itemBoughtChanged)="itemBoughtChanged.emit($event)"
-                (itemQuantityChanged)="itemQuantityChanged.emit({item, quantity: $event})"
-                (itemDeleteClicked)="itemDeleteClicked.emit(item)"
-                (itemEditClicked)="itemEditClicked.emit(item)">
-        </app-grocery-list-item>
-    </div>
+@if (groceryListItems().length) {
+    <ul class="grocery-list" aria-label="Grocery items">
+        @for (item of groceryListItems(); track item.id) {
+            <li class="item">
+                <app-grocery-list-item
+                        [item]="item"
+                        (itemBoughtChanged)="itemBoughtChanged.emit($event)"
+                        (itemQuantityChanged)="itemQuantityChanged.emit({item, quantity: $event})"
+                        (itemDeleteClicked)="itemDeleteClicked.emit(item)"
+                        (itemEditClicked)="itemEditClicked.emit(item)">
+                </app-grocery-list-item>
+            </li>
+        }
+    </ul>
 }

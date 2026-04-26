@@ -2,6 +2,7 @@
     <div class="left">
         <mat-checkbox
                 [checked]="item().isBought"
+                [attr.aria-label]="'Mark ' + item().name + ' as bought'"
                 (change)="isBoughtChanged($event.checked)">
         </mat-checkbox>
         <span class="name" [class.strikethrough]="item().isBought">
@@ -9,19 +10,37 @@
         </span>
     </div>
     <div class="right">
-        <div class="quantity-row">
-            <button matIconButton (click)="itemQuantityChanged.emit(item().quantity - 1)">
-                <mat-icon>remove</mat-icon>
+        <div class="quantity-row" [attr.aria-label]="'Quantity for ' + item().name">
+            <button
+                matIconButton
+                type="button"
+                [attr.aria-label]="'Decrease quantity of ' + item().name"
+                (click)="itemQuantityChanged.emit(item().quantity - 1)">
+                <mat-icon aria-hidden="true">remove</mat-icon>
             </button>
-            <span>{{item().quantity}}</span>
-            <button matIconButton (click)="itemQuantityChanged.emit(item().quantity + 1)">
-                <mat-icon>add</mat-icon>
+            <span aria-live="polite" [attr.aria-label]="'Quantity: ' + item().quantity">
+                {{item().quantity}}
+            </span>
+            <button
+                    matIconButton
+                    type="button"
+                    [attr.aria-label]="'Increase quantity of ' + item().name"
+                    (click)="itemQuantityChanged.emit(item().quantity + 1)">
+                <mat-icon aria-hidden="true">add</mat-icon>
             </button>
         </div>
-        <button matButton (click)="itemEditClicked.emit(item())">
+        <button
+                matButton
+                type="button"
+                [attr.aria-label]="'Edit ' + item().name"
+                (click)="itemEditClicked.emit(item())">
             Edit
         </button>
-        <button matButton (click)="itemDeleteClicked.emit(item())">
+        <button
+                matButton
+                type="button"
+                [attr.aria-label]="'Delete ' + item().name"
+                (click)="itemDeleteClicked.emit(item())">
             Delete
         </button>
     </div>

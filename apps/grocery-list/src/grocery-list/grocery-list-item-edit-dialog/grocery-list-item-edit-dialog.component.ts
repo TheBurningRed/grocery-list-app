@@ -5,6 +5,11 @@ import { MatInputModule } from '@angular/material/input';
 import { FormsModule } from '@angular/forms';
 import { GroceryListItem, GroceryListItemDraft } from 'interfaces';
 
+type GroceryListItemFormModel = {
+  name: string;
+  quantity: number;
+};
+
 @Component({
   selector: 'app-grocery-list-item-edit-dialog',
   imports: [MatDialogModule, MatButton, MatInputModule, FormsModule],
@@ -17,7 +22,7 @@ export class GroceryListItemEditDialogComponent {
     MAT_DIALOG_DATA,
   );
 
-  readonly formModel = {
+  readonly formModel: GroceryListItemFormModel = {
     name: this.groceryListItem.name,
     quantity: this.groceryListItem.quantity,
   };
@@ -27,10 +32,12 @@ export class GroceryListItemEditDialogComponent {
   }
 
   get result(): GroceryListItem | GroceryListItemDraft {
-    const normalizedItem = {
+    const quantity = Math.trunc(Number(this.formModel.quantity));
+
+    const normalizedItem: GroceryListItemDraft = {
       name: this.formModel.name.trim(),
-      quantity: Number(this.formModel.quantity),
-      isBought: (this.groceryListItem as GroceryListItem).isBought,
+      quantity: Number.isFinite(quantity) ? quantity : 0,
+      isBought: this.isNew ? false : (this.groceryListItem as GroceryListItem).isBought,
     };
 
     return this.isNew
