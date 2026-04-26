@@ -27,6 +27,7 @@ import {
   repeat,
   Subject,
   switchMap,
+  tap,
 } from 'rxjs';
 
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
@@ -45,8 +46,13 @@ export class GroceryListPageComponent implements OnInit {
   private readonly snackBar = inject(MatSnackBar);
   private destroyRef = inject(DestroyRef);
 
-  groceriesUpdated$ = new Subject<void>();
-  private readonly groceryListItemQuantityUpdated$ = new Subject<GroceryListItem>();
+  private readonly groceriesUpdated$ = new Subject<void>();
+  private readonly groceryListItemQuantityUpdated$ = new Subject<{
+    item: GroceryListItem;
+    version: number;
+  }>();
+  private readonly quantityUpdateRollbackMap = new Map<string, GroceryListItem>();
+  private readonly quantityUpdateVersionMap = new Map<string, number>();
 
   readonly groceryList = signal<GroceryListItem[]>([]);
   readonly groceryListLoadState = signal<GroceryListLoadState>('loading');
@@ -75,14 +81,21 @@ export class GroceryListPageComponent implements OnInit {
   private saveQuantityUpdates(): void {
     this.groceryListItemQuantityUpdated$
       .pipe(
-        groupBy((item) => item.id),
+        groupBy((update) => update.item.id),
         mergeMap((itemUpdates$) =>
           itemUpdates$.pipe(
             debounceTime(500),
-            switchMap((item) =>
-              this.groceryListService
-                .updateGroceryListItem(item)
-                .pipe(catchError(() => this.handleError('Could not update the item quantity.'))),
+            switchMap(({ item, version }) =>
+              this.groceryListService.updateGroceryListItem(item).pipe(
+                tap(() => this.clearQuantityRollbackIfLatest(item.id, version)),
+                catchError(() =>
+                  this.handleQuantityUpdateError(
+                    'Could not update the item quantity.',
+                    item.id,
+                    version,
+                  ),
+                ),
+              ),
             ),
           ),
         ),
@@ -155,16 +168,25 @@ export class GroceryListPageComponent implements OnInit {
   }
 
   updateItemQuantity(update: GroceryItemQuantityUpdate): void {
+    const itemId = update.item.id;
+
+    if (!this.quantityUpdateRollbackMap.has(itemId)) {
+      this.quantityUpdateRollbackMap.set(itemId, { ...update.item });
+    }
+
+    const version = (this.quantityUpdateVersionMap.get(itemId) ?? 0) + 1;
+    this.quantityUpdateVersionMap.set(itemId, version);
+
     const updatedItem: GroceryListItem = {
       ...update.item,
       quantity: Math.max(1, update.quantity),
     };
 
     this.groceryList.update((value) =>
-      value.map((item) => (item.id === update.item.id ? updatedItem : item)),
+      value.map((item) => (item.id === itemId ? updatedItem : item)),
     );
 
-    this.groceryListItemQuantityUpdated$.next(updatedItem);
+    this.groceryListItemQuantityUpdated$.next({ item: updatedItem, version });
   }
 
   updateItemIsBought(groceryListItem: GroceryListItem): void {
@@ -194,6 +216,40 @@ export class GroceryListPageComponent implements OnInit {
 
     // refetch and rollback state in case of failure
     this.groceriesUpdated$.next();
+
+    return EMPTY;
+  }
+
+  private clearQuantityRollbackIfLatest(itemId: string, version: number): void {
+    if (this.quantityUpdateVersionMap.get(itemId) !== version) {
+      return;
+    }
+
+    this.quantityUpdateRollbackMap.delete(itemId);
+  }
+
+  private handleQuantityUpdateError(
+    message: string,
+    itemId: string,
+    version: number,
+  ): Observable<never> {
+    const rollbackItem = this.quantityUpdateRollbackMap.get(itemId);
+
+    if (!rollbackItem) {
+      return this.handleError(message);
+    }
+
+    if (this.quantityUpdateVersionMap.get(itemId) === version) {
+      this.groceryList.update((value) =>
+        value.map((item) => (item.id === itemId ? rollbackItem : item)),
+      );
+    }
+
+    this.quantityUpdateRollbackMap.delete(itemId);
+
+    this.snackBar.open(message, 'Dismiss', {
+      duration: 5000,
+    });
 
     return EMPTY;
   }

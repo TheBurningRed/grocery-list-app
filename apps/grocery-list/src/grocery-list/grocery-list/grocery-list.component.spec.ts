@@ -30,6 +30,7 @@ describe('GroceryListComponent', () => {
     fixture = TestBed.createComponent(GroceryListComponent);
     component = fixture.componentInstance;
     fixture.componentRef.setInput('groceryListItems', groceryListItems);
+    fixture.componentRef.setInput('loadState', 'loaded');
     fixture.detectChanges();
   });
 

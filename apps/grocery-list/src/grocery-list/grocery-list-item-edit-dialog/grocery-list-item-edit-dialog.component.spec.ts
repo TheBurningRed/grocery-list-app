@@ -39,8 +39,8 @@ describe('GroceryListItemEditDialogComponent', () => {
       expect(component).toBeTruthy();
     });
 
-    it('should initialize the form model from dialog data', () => {
-      expect(component.formModel).toEqual({
+    it('should initialize the form from dialog data', () => {
+      expect(component.form.getRawValue()).toEqual({
         name: 'Milk',
         quantity: 2,
       });
@@ -51,8 +51,10 @@ describe('GroceryListItemEditDialogComponent', () => {
     });
 
     it('should return a trimmed result with the existing id', () => {
-      component.formModel.name = '  Oat milk  ';
-      component.formModel.quantity = 4;
+      component.form.patchValue({
+        name: '  Oat milk  ',
+        quantity: 4,
+      });
 
       expect(component.result).toEqual({
         id: '1',
@@ -76,13 +78,15 @@ describe('GroceryListItemEditDialogComponent', () => {
     });
 
     it('should return a trimmed draft without an id', () => {
-      component.formModel.name = '  Bananas  ';
-      component.formModel.quantity = 6;
+      component.form.patchValue({
+        name: '  Bananas  ',
+        quantity: 6,
+      });
 
       expect(component.result).toEqual({
         name: 'Bananas',
         quantity: 6,
-        isBought: undefined,
+        isBought: false,
       });
     });
   });

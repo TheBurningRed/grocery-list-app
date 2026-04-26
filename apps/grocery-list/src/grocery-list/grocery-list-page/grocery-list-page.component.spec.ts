@@ -142,7 +142,7 @@ describe('GroceryListPageComponent', () => {
   });
 
   it('should update bought state and trigger grocery list refresh', () => {
-    const refreshSpy = vi.spyOn(component.groceriesUpdated$, 'next');
+    const refreshSpy = vi.spyOn(component['groceriesUpdated$'], 'next');
 
     component.updateItemIsBought({
       ...groceryItem,
@@ -167,7 +167,7 @@ describe('GroceryListPageComponent', () => {
       afterClosed: () => of(updatedItem),
     });
 
-    const refreshSpy = vi.spyOn(component.groceriesUpdated$, 'next');
+    const refreshSpy = vi.spyOn(component['groceriesUpdated$'], 'next');
 
     component.editItemDialog(groceryItem);
 
@@ -201,13 +201,13 @@ describe('GroceryListPageComponent', () => {
       afterClosed: () => of(newItem),
     });
 
-    const refreshSpy = vi.spyOn(component.groceriesUpdated$, 'next');
+    const refreshSpy = vi.spyOn(component['groceriesUpdated$'], 'next');
 
     component.createItemDialog();
 
     expect(dialog.open).toHaveBeenCalledTimes(1);
     expect(dialog.open).toHaveBeenCalledWith(GroceryListItemEditDialogComponent, {
-      data: { name: '', quantity: 1 },
+      data: { name: '', quantity: 1, isBought: false },
     });
     expect(groceryListService.createGroceryListItem).toHaveBeenCalledTimes(1);
     expect(groceryListService.createGroceryListItem).toHaveBeenCalledWith(newItem);
@@ -229,7 +229,7 @@ describe('GroceryListPageComponent', () => {
       afterClosed: () => of(true),
     });
 
-    const refreshSpy = vi.spyOn(component.groceriesUpdated$, 'next');
+    const refreshSpy = vi.spyOn(component['groceriesUpdated$'], 'next');
 
     component.deleteItemDialog(groceryItem);
 
