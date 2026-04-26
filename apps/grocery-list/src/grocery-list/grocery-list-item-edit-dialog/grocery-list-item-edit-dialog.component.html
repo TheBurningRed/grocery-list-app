@@ -1,19 +1,16 @@
 <h2 mat-dialog-title>{{ isNew ? 'Add' : 'Edit' }} item</h2>
 
-<form #itemForm="ngForm">
+<form [formGroup]="form">
     <mat-dialog-content>
         <div>
             <mat-form-field class="example-full-width">
                 <mat-label>Name</mat-label>
                 <input
-                    #name="ngModel"
-                    name="name"
+                    formControlName="name"
                     matInput
-                    pattern=".*\S.*"
                     required
-                    [(ngModel)]="formModel.name"
                 >
-                @if (name.invalid && (name.touched || itemForm.submitted)) {
+                @if (form.controls.name.invalid && (form.controls.name.touched || form.touched)) {
                     <mat-error>Name is required</mat-error>
                 }
             </mat-form-field>
@@ -22,16 +19,14 @@
             <mat-form-field class="example-full-width">
                 <mat-label>Quantity</mat-label>
                 <input
-                    #quantity="ngModel"
+                    formControlName="quantity"
                     type="number"
                     min="1"
                     step="1"
                     matInput
                     required
-                    name="quantity"
-                    [(ngModel)]="formModel.quantity"
                 >
-                @if (quantity.invalid && (quantity.touched || itemForm.submitted)) {
+                @if (form.controls.quantity.invalid && (form.controls.quantity.touched || form.touched)) {
                     <mat-error>Quantity must be at least 1</mat-error>
                 }
             </mat-form-field>
@@ -44,7 +39,7 @@
             matButton="filled"
             color="primary"
             type="submit"
-            [disabled]="itemForm.invalid"
+            [disabled]="form.invalid"
             [mat-dialog-close]="result"
         >
             Save
