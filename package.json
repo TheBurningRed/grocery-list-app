@@ -3,9 +3,9 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "start": "nx serve grocery-list | npx json-server apps/grocery-list/public/db.json -p 3001",
-    "prepare": "husky",
-    "lint": "nx run-many -t lint"
+    "start": "concurrently \"nx serve grocery-list\" \"json-server apps/grocery-list/public/db.json -p 3001\"",
+    "start:app": "nx serve grocery-list",
+    "start:api": "json-server apps/grocery-list/public/db.json -p 3001"
   },
   "lint-staged": {
     "*.{ts,tsx,js,jsx,mjs,cjs}": "eslint --max-warnings=0"
@@ -33,6 +33,7 @@
     "@swc/helpers": "~0.5.18",
     "@typescript-eslint/utils": "^8.40.0",
     "angular-eslint": "^21.2.0",
+    "concurrently": "^9.2.1",
     "eslint": "^9.8.0",
     "eslint-config-prettier": "^10.0.0",
     "eslint-plugin-playwright": "^1.6.2",

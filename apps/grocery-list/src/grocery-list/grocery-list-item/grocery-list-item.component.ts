@@ -7,8 +7,8 @@ import { MatCheckbox } from '@angular/material/checkbox';
 @Component({
   selector: 'app-grocery-list-item',
   imports: [MatIcon, MatButtonModule, MatCheckbox],
-  templateUrl: './grocery-list-item.html',
-  styleUrl: './grocery-list-item.scss',
+  templateUrl: './grocery-list-item.component.html',
+  styleUrl: './grocery-list-item.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class GroceryListItemComponent {

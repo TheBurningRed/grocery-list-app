@@ -1,5 +1,5 @@
 import { Route } from '@angular/router';
-import { LayoutComponent } from '../layout/layout';
+import { LayoutComponent } from '../layout/layout.component';
 
 export const appRoutes: Route[] = [
   {
@@ -9,15 +9,15 @@ export const appRoutes: Route[] = [
       {
         path: 'grocery-list',
         loadComponent: () =>
-          import('../grocery-list/grocery-list-page/grocery-list-page').then(
+          import('../grocery-list/grocery-list-page/grocery-list-page.component').then(
             (m) => m.GroceryListPageComponent,
           ),
       },
+      {
+        path: '',
+        redirectTo: 'grocery-list',
+        pathMatch: 'full',
+      },
     ],
-  },
-  {
-    path: '',
-    redirectTo: 'grocery-list',
-    pathMatch: 'full',
   },
 ];

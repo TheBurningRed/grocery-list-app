@@ -11,7 +11,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { GroceryListService } from '../grocery-list.service';
 import { GroceryListItem } from 'interfaces';
-import { GroceryListComponent } from '../grocery-list/grocery-list';
+import { GroceryListComponent } from '../grocery-list/grocery-list.component';
 import { MatButton } from '@angular/material/button';
 import { MatIcon } from '@angular/material/icon';
 import { GroceryItemQuantityUpdate } from '../grocery-list-item-quantity-update.interface';
@@ -21,22 +21,20 @@ import {
   debounceTime,
   EMPTY,
   filter,
-  groupBy,
-  mergeMap,
   Observable,
   repeat,
   Subject,
   switchMap,
 } from 'rxjs';
+
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ConfirmDialogComponent } from '../../confirm-dialog/confirm-dialog.component';
 
 @Component({
   selector: 'app-grocery-list-page',
   imports: [MatCardModule, GroceryListComponent, MatButton, MatIcon],
-  providers: [],
-  templateUrl: './grocery-list-page.html',
-  styleUrl: './grocery-list-page.scss',
+  templateUrl: './grocery-list-page.component.html',
+  styleUrl: './grocery-list-page.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class GroceryListPageComponent implements OnInit {
@@ -59,6 +57,7 @@ export class GroceryListPageComponent implements OnInit {
     this.groceryListService
       .fetchGroceryList()
       .pipe(
+        // refetch on any update, verifies optimistic updates complete, rollback in case of failure
         repeat({ delay: () => this.groceriesUpdated$ }),
         catchError(() => this.handleError('Could not load the grocery list.')),
         takeUntilDestroyed(this.destroyRef),
@@ -71,18 +70,13 @@ export class GroceryListPageComponent implements OnInit {
   private saveQuantityUpdates(): void {
     this.groceryListItemQuantityUpdated$
       .pipe(
-        takeUntilDestroyed(this.destroyRef),
-        groupBy((item) => item.id),
-        mergeMap((itemUpdates$) =>
-          itemUpdates$.pipe(
-            debounceTime(500),
-            switchMap((item) =>
-              this.groceryListService
-                .updateGroceryListItem(item)
-                .pipe(catchError(() => this.handleError('Could not update the item quantity.'))),
-            ),
-          ),
+        debounceTime(500),
+        switchMap((item) =>
+          this.groceryListService
+            .updateGroceryListItem(item)
+            .pipe(catchError(() => this.handleError('Could not update the item quantity.'))),
         ),
+        takeUntilDestroyed(this.destroyRef),
       )
       .subscribe(() => this.groceriesUpdated$.next());
   }
@@ -100,6 +94,7 @@ export class GroceryListPageComponent implements OnInit {
             .updateGroceryListItem(res)
             .pipe(catchError(() => this.handleError('Could not update the grocery item.'))),
         ),
+        takeUntilDestroyed(this.destroyRef),
       )
       .subscribe(() => this.groceriesUpdated$.next());
   }
@@ -107,7 +102,7 @@ export class GroceryListPageComponent implements OnInit {
   createItemDialog(): void {
     this.dialog
       .open(GroceryListItemEditDialogComponent, {
-        data: { name: '', quantity: 1 },
+        data: { name: '', quantity: 1, isBought: false },
       })
       .afterClosed()
       .pipe(
@@ -117,6 +112,7 @@ export class GroceryListPageComponent implements OnInit {
             .createGroceryListItem(res)
             .pipe(catchError(() => this.handleError('Could not create the grocery item.'))),
         ),
+        takeUntilDestroyed(this.destroyRef),
       )
       .subscribe(() => {
         this.groceriesUpdated$.next();
@@ -141,6 +137,7 @@ export class GroceryListPageComponent implements OnInit {
             .deleteGroceryListItem(groceryListItem)
             .pipe(catchError(() => this.handleError('Could not delete the grocery item.'))),
         ),
+        takeUntilDestroyed(this.destroyRef),
       )
       .subscribe(() => {
         this.groceriesUpdated$.next();
@@ -163,7 +160,10 @@ export class GroceryListPageComponent implements OnInit {
   updateItemIsBought(groceryListItem: GroceryListItem): void {
     this.groceryListService
       .updateGroceryListItem(groceryListItem)
-      .pipe(catchError(() => this.handleError('Could not update the grocery item.')))
+      .pipe(
+        catchError(() => this.handleError('Could not update the grocery item.')),
+        takeUntilDestroyed(this.destroyRef),
+      )
       .subscribe(() => this.groceriesUpdated$.next());
   }
 

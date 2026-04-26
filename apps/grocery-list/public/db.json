@@ -1,25 +1,25 @@
 {
   "grocery-list": [
     {
-      "name": "Testo",
+      "name": "Test",
       "quantity": 2,
       "id": "45ZD1G_kvxo",
       "isBought": true
     },
     {
       "name": "Juice",
-      "quantity": 7,
+      "quantity": 2,
       "id": "Ndz-pX0UIbc"
     },
     {
-      "name": "Testh",
-      "quantity": 1,
+      "name": "Test2",
+      "quantity": 9,
       "isBought": true,
       "id": "N2tohac8Wa0"
     },
     {
       "name": "New up",
-      "quantity": 2,
+      "quantity": 1,
       "isBought": true,
       "id": "NMpt2D3UfwQ"
     },
