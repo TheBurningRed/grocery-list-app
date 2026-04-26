@@ -10,7 +10,7 @@ import { MatCardModule } from '@angular/material/card';
 import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { GroceryListService } from '../grocery-list.service';
-import { GroceryListItem } from 'interfaces';
+import { GroceryListItem, GroceryListItemDraft } from 'interfaces';
 import { GroceryListComponent, GroceryListLoadState } from '../grocery-list/grocery-list.component';
 import { MatButton } from '@angular/material/button';
 import { MatIcon } from '@angular/material/icon';
@@ -24,7 +24,7 @@ import {
   groupBy,
   mergeMap,
   Observable,
-  repeat,
+  startWith,
   Subject,
   switchMap,
   tap,
@@ -65,10 +65,10 @@ export class GroceryListPageComponent implements OnInit {
   fetchGroceryList(): void {
     this.groceryListLoadState.set('loading');
 
-    this.groceryListService
-      .fetchGroceryList()
+    this.groceriesUpdated$
       .pipe(
-        repeat({ delay: () => this.groceriesUpdated$ }),
+        startWith(''),
+        switchMap(() => this.groceryListService.fetchGroceryList()),
         catchError(() => this.handleLoadError('Could not load the grocery list.')),
         takeUntilDestroyed(this.destroyRef),
       )
@@ -130,7 +130,7 @@ export class GroceryListPageComponent implements OnInit {
       .afterClosed()
       .pipe(
         filter((res) => !!res),
-        switchMap((res: GroceryListItem) =>
+        switchMap((res: GroceryListItemDraft) =>
           this.groceryListService
             .createGroceryListItem(res)
             .pipe(catchError(() => this.handleError('Could not create the grocery item.'))),
@@ -202,17 +202,13 @@ export class GroceryListPageComponent implements OnInit {
   private handleLoadError(message: string): Observable<never> {
     this.groceryListLoadState.set('error');
 
-    this.snackBar.open(message, 'Dismiss', {
-      duration: 5000,
-    });
+    this.showError(message);
 
     return EMPTY;
   }
 
   private handleError(message: string): Observable<never> {
-    this.snackBar.open(message, 'Dismiss', {
-      duration: 5000,
-    });
+    this.showError(message);
 
     // refetch and rollback state in case of failure
     this.groceriesUpdated$.next();
@@ -233,24 +229,31 @@ export class GroceryListPageComponent implements OnInit {
     itemId: string,
     version: number,
   ): Observable<never> {
+    if (this.quantityUpdateVersionMap.get(itemId) !== version) {
+      return EMPTY;
+    }
+
     const rollbackItem = this.quantityUpdateRollbackMap.get(itemId);
 
     if (!rollbackItem) {
       return this.handleError(message);
     }
 
-    if (this.quantityUpdateVersionMap.get(itemId) === version) {
-      this.groceryList.update((value) =>
-        value.map((item) => (item.id === itemId ? rollbackItem : item)),
-      );
-    }
+    this.groceryList.update((value) =>
+      value.map((item) => (item.id === itemId ? rollbackItem : item)),
+    );
 
     this.quantityUpdateRollbackMap.delete(itemId);
+    this.quantityUpdateVersionMap.delete(itemId);
 
+    this.showError(message);
+
+    return EMPTY;
+  }
+
+  private showError(message: string): void {
     this.snackBar.open(message, 'Dismiss', {
       duration: 5000,
     });
-
-    return EMPTY;
   }
 }

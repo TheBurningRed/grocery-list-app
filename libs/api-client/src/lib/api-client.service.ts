@@ -17,15 +17,15 @@ export class ApiClientService {
     return this.httpClient.get<GroceryListItem[]>(`${this.apiUrl}/grocery-list`);
   }
 
-  updateGroceryListItem(item: GroceryListItem): Observable<void> {
-    return this.httpClient.put<void>(`${this.apiUrl}/grocery-list/${item.id}`, item);
+  updateGroceryListItem(item: GroceryListItem): Observable<GroceryListItem> {
+    return this.httpClient.put<GroceryListItem>(`${this.apiUrl}/grocery-list/${item.id}`, item);
   }
 
-  createGroceryListItem(item: GroceryListItemDraft): Observable<void> {
-    return this.httpClient.post<void>(`${this.apiUrl}/grocery-list`, item);
+  createGroceryListItem(item: GroceryListItemDraft): Observable<GroceryListItem> {
+    return this.httpClient.post<GroceryListItem>(`${this.apiUrl}/grocery-list`, item);
   }
 
   deleteGroceryListItem(item: GroceryListItem): Observable<void> {
-    return this.httpClient.delete<void>(`${this.apiUrl}/grocery-list/${item.id}`, {});
+    return this.httpClient.delete<void>(`${this.apiUrl}/grocery-list/${item.id}`);
   }
 }

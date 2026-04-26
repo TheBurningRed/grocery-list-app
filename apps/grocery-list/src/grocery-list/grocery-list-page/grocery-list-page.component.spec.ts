@@ -267,4 +267,210 @@ describe('GroceryListPageComponent', () => {
       duration: 5000,
     });
   });
+
+  it('should rollback quantity to the previous item state when latest quantity save fails', async () => {
+    vi.useFakeTimers();
+
+    const originalItem: GroceryListItem = {
+      ...groceryItem,
+      quantity: 2,
+    };
+
+    groceryListService.updateGroceryListItem.mockReturnValue(throwError(() => new Error('Failed')));
+
+    component.groceryList.set([originalItem]);
+    component.ngOnInit();
+
+    component.updateItemQuantity({
+      item: originalItem,
+      quantity: 5,
+    });
+
+    expect(component.groceryList()).toEqual([
+      {
+        ...originalItem,
+        quantity: 5,
+      },
+    ]);
+
+    await vi.advanceTimersByTimeAsync(500);
+
+    expect(component.groceryList()).toEqual([originalItem]);
+    expect(snackBar.open).toHaveBeenCalledWith('Could not update the item quantity.', 'Dismiss', {
+      duration: 5000,
+    });
+  });
+
+  it('should not trigger full grocery list refresh when quantity rollback data exists', async () => {
+    vi.useFakeTimers();
+
+    const refreshSpy = vi.spyOn(component['groceriesUpdated$'], 'next');
+
+    groceryListService.updateGroceryListItem.mockReturnValue(throwError(() => new Error('Failed')));
+
+    component.groceryList.set([groceryItem]);
+    component.ngOnInit();
+
+    component.updateItemQuantity({
+      item: groceryItem,
+      quantity: 5,
+    });
+
+    await vi.advanceTimersByTimeAsync(500);
+
+    expect(refreshSpy).not.toHaveBeenCalled();
+    expect(snackBar.open).toHaveBeenCalledWith('Could not update the item quantity.', 'Dismiss', {
+      duration: 5000,
+    });
+  });
+
+  it('should fall back to full grocery list refresh when quantity rollback data is missing', async () => {
+    vi.useFakeTimers();
+
+    const refreshSpy = vi.spyOn(component['groceriesUpdated$'], 'next');
+
+    groceryListService.updateGroceryListItem.mockReturnValue(throwError(() => new Error('Failed')));
+
+    component.groceryList.set([groceryItem]);
+    component.ngOnInit();
+
+    component.updateItemQuantity({
+      item: groceryItem,
+      quantity: 5,
+    });
+
+    component['quantityUpdateRollbackMap'].delete(groceryItem.id);
+
+    await vi.advanceTimersByTimeAsync(500);
+
+    expect(refreshSpy).toHaveBeenCalledTimes(1);
+    expect(snackBar.open).toHaveBeenCalledWith('Could not update the item quantity.', 'Dismiss', {
+      duration: 5000,
+    });
+  });
+
+  it('should save only the latest quantity after rapid updates for the same item', async () => {
+    vi.useFakeTimers();
+
+    const originalItem: GroceryListItem = {
+      ...groceryItem,
+      quantity: 2,
+    };
+
+    component.groceryList.set([originalItem]);
+    component.ngOnInit();
+
+    component.updateItemQuantity({
+      item: originalItem,
+      quantity: 3,
+    });
+
+    component.updateItemQuantity({
+      item: {
+        ...originalItem,
+        quantity: 3,
+      },
+      quantity: 4,
+    });
+
+    component.updateItemQuantity({
+      item: {
+        ...originalItem,
+        quantity: 4,
+      },
+      quantity: 5,
+    });
+
+    await vi.advanceTimersByTimeAsync(500);
+
+    expect(groceryListService.updateGroceryListItem).toHaveBeenCalledTimes(1);
+    expect(groceryListService.updateGroceryListItem).toHaveBeenCalledWith({
+      ...originalItem,
+      quantity: 5,
+    });
+  });
+
+  it('should keep quantity updates for different items independent', async () => {
+    vi.useFakeTimers();
+
+    const breadItem: GroceryListItem = {
+      id: '2',
+      name: 'Bread',
+      quantity: 1,
+      isBought: false,
+    };
+
+    component.groceryList.set([groceryItem, breadItem]);
+    component.ngOnInit();
+
+    component.updateItemQuantity({
+      item: groceryItem,
+      quantity: 3,
+    });
+
+    component.updateItemQuantity({
+      item: breadItem,
+      quantity: 4,
+    });
+
+    await vi.advanceTimersByTimeAsync(500);
+
+    expect(groceryListService.updateGroceryListItem).toHaveBeenCalledTimes(2);
+    expect(groceryListService.updateGroceryListItem).toHaveBeenCalledWith({
+      ...groceryItem,
+      quantity: 3,
+    });
+    expect(groceryListService.updateGroceryListItem).toHaveBeenCalledWith({
+      ...breadItem,
+      quantity: 4,
+    });
+  });
+
+  it('should not rollback current quantity when handling a stale quantity update failure', () => {
+    const originalItem: GroceryListItem = {
+      ...groceryItem,
+      quantity: 2,
+    };
+
+    const newerItem: GroceryListItem = {
+      ...groceryItem,
+      quantity: 5,
+    };
+
+    component.groceryList.set([newerItem]);
+    component['quantityUpdateRollbackMap'].set(groceryItem.id, originalItem);
+    component['quantityUpdateVersionMap'].set(groceryItem.id, 2);
+
+    component['handleQuantityUpdateError'](
+      'Could not update the item quantity.',
+      groceryItem.id,
+      1,
+    ).subscribe();
+
+    expect(component.groceryList()).toEqual([newerItem]);
+  });
+
+  it('should not clear rollback data when handling a stale quantity update failure', () => {
+    const originalItem: GroceryListItem = {
+      ...groceryItem,
+      quantity: 2,
+    };
+
+    const newerItem: GroceryListItem = {
+      ...groceryItem,
+      quantity: 5,
+    };
+
+    component.groceryList.set([newerItem]);
+    component['quantityUpdateRollbackMap'].set(groceryItem.id, originalItem);
+    component['quantityUpdateVersionMap'].set(groceryItem.id, 2);
+
+    component['handleQuantityUpdateError'](
+      'Could not update the item quantity.',
+      groceryItem.id,
+      1,
+    ).subscribe();
+
+    expect(component['quantityUpdateRollbackMap'].get(groceryItem.id)).toEqual(originalItem);
+  });
 });

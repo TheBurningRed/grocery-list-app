@@ -13,11 +13,11 @@ export class GroceryListService {
     return this.apiClient.fetchGroceryList();
   }
 
-  updateGroceryListItem(item: GroceryListItem): Observable<void> {
+  updateGroceryListItem(item: GroceryListItem): Observable<GroceryListItem> {
     return this.apiClient.updateGroceryListItem(item);
   }
 
-  createGroceryListItem(item: GroceryListItemDraft): Observable<void> {
+  createGroceryListItem(item: GroceryListItemDraft): Observable<GroceryListItem> {
     return this.apiClient.createGroceryListItem(item);
   }
 

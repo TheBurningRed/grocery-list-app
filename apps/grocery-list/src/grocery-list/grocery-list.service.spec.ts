@@ -1,7 +1,7 @@
 import { TestBed } from '@angular/core/testing';
-import { of } from 'rxjs';
 import { ApiClientService } from 'api-client';
 import { GroceryListItem, GroceryListItemDraft } from 'interfaces';
+import { of } from 'rxjs';
 
 import { GroceryListService } from './grocery-list.service';
 
@@ -23,10 +23,10 @@ describe('GroceryListService', () => {
 
   beforeEach(() => {
     apiClient = {
-      fetchGroceryList: vi.fn(),
-      updateGroceryListItem: vi.fn(),
-      createGroceryListItem: vi.fn(),
-      deleteGroceryListItem: vi.fn(),
+      fetchGroceryList: vi.fn().mockReturnValue(of([groceryItem])),
+      updateGroceryListItem: vi.fn().mockReturnValue(of(groceryItem)),
+      createGroceryListItem: vi.fn().mockReturnValue(of(groceryItem)),
+      deleteGroceryListItem: vi.fn().mockReturnValue(of(void 0)),
     };
 
     TestBed.configureTestingModule({
@@ -42,6 +42,7 @@ describe('GroceryListService', () => {
 
   it('should fetch grocery list using the API client', () => {
     const groceryList: GroceryListItem[] = [groceryItem];
+
     apiClient.fetchGroceryList.mockReturnValue(of(groceryList));
 
     service.fetchGroceryList().subscribe((result) => {
@@ -53,14 +54,19 @@ describe('GroceryListService', () => {
   });
 
   it('should update a grocery list item using the API client', () => {
-    apiClient.updateGroceryListItem.mockReturnValue(of(void 0));
+    const updatedItem: GroceryListItem = {
+      ...groceryItem,
+      quantity: 3,
+    };
 
-    service.updateGroceryListItem(groceryItem).subscribe((result) => {
-      expect(result).toBeUndefined();
+    apiClient.updateGroceryListItem.mockReturnValue(of(updatedItem));
+
+    service.updateGroceryListItem(updatedItem).subscribe((result) => {
+      expect(result).toEqual(updatedItem);
     });
 
     expect(apiClient.updateGroceryListItem).toHaveBeenCalledTimes(1);
-    expect(apiClient.updateGroceryListItem).toHaveBeenCalledWith(groceryItem);
+    expect(apiClient.updateGroceryListItem).toHaveBeenCalledWith(updatedItem);
   });
 
   it('should create a grocery list item using the API client', () => {
@@ -69,10 +75,16 @@ describe('GroceryListService', () => {
       quantity: 1,
     };
 
-    apiClient.createGroceryListItem.mockReturnValue(of(void 0));
+    const createdItem: GroceryListItem = {
+      id: '2',
+      ...draft,
+      isBought: false,
+    };
+
+    apiClient.createGroceryListItem.mockReturnValue(of(createdItem));
 
     service.createGroceryListItem(draft).subscribe((result) => {
-      expect(result).toBeUndefined();
+      expect(result).toEqual(createdItem);
     });
 
     expect(apiClient.createGroceryListItem).toHaveBeenCalledTimes(1);
@@ -80,8 +92,6 @@ describe('GroceryListService', () => {
   });
 
   it('should delete a grocery list item using the API client', () => {
-    apiClient.deleteGroceryListItem.mockReturnValue(of(void 0));
-
     service.deleteGroceryListItem(groceryItem).subscribe((result) => {
       expect(result).toBeUndefined();
     });
