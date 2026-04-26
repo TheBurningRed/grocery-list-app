@@ -1,12 +1,19 @@
-<div class="page-content">
-    <mat-card class="example-card" appearance="outlined">
+<div class="page-content grocery-list-page">
+    <mat-card appearance="outlined">
         <mat-card-header>
-            <mat-card-title>My groceries list</mat-card-title>
+            <div class="card-title">
+                <mat-card-title>My groceries list</mat-card-title>
+                <button matButton="filled" (click)="createItemDialog()">Add item <mat-icon>add</mat-icon></button>
+            </div>
         </mat-card-header>
         <mat-card-content>
-            <p>
-                Groceries list component works
-            </p>
+            <app-grocery-list
+                    [groceryListItems]="groceryList()"
+                    (itemQuantityChanged)="updateItemQuantity($event)"
+                    (itemBoughtChanged)="updateItemIsBought($event)"
+                    (itemDeleteClicked)="deleteItemDialog($event)"
+                    (itemEditClicked)="editItemDialog($event)">
+            </app-grocery-list>
         </mat-card-content>
     </mat-card>
 </div>

@@ -10,7 +10,7 @@ export const appConfig: ApplicationConfig = {
     provideRouter(appRoutes),
     {
       provide: API_URL,
-      useValue: 'localhost:3001',
+      useValue: 'http://localhost:3001',
     },
   ],
 };

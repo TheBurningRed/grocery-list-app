@@ -1,5 +1,6 @@
 export interface GroceryListItem {
+  id: string;
   name: string;
-  amount: number;
+  quantity: number;
   isBought: boolean;
 }

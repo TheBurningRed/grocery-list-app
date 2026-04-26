@@ -3,15 +3,29 @@ import { HttpClient } from '@angular/common/http';
 
 import { Observable } from 'rxjs';
 import { API_URL } from './api-url.token';
-import { GroceryListItem } from 'interfaces';
+import { GroceryListItem, GroceryListItemDraft } from 'interfaces';
 
-@Injectable()
+@Injectable({
+  providedIn: 'root',
+})
 export class ApiClientService {
   httpClient = inject(HttpClient);
 
   apiUrl = inject(API_URL);
 
   fetchGroceryList(): Observable<GroceryListItem[]> {
-    return this.httpClient.get<GroceryListItem[]>(`${this.apiUrl}/products`);
+    return this.httpClient.get<GroceryListItem[]>(`${this.apiUrl}/grocery-list`);
+  }
+
+  updateGroceryListItem(item: GroceryListItem): Observable<void> {
+    return this.httpClient.put<void>(`${this.apiUrl}/grocery-list/${item.id}`, item);
+  }
+
+  createGroceryListItem(item: GroceryListItemDraft): Observable<void> {
+    return this.httpClient.post<void>(`${this.apiUrl}/grocery-list`, item);
+  }
+
+  deleteGroceryListItem(item: GroceryListItem): Observable<void> {
+    return this.httpClient.delete<void>(`${this.apiUrl}/grocery-list/${item.id}`, {});
   }
 }

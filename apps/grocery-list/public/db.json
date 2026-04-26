@@ -1,10 +1,34 @@
 {
-  "$schema": "../../../node_modules/json-server/schema.json",
-  "products": [
-    { "id": "1", "name": "Apple" },
-    { "id": "2", "title": "Milk" },
-    { "id": "3", "title": "Juice" },
-    { "id": "4", "title": "Bread" },
-    { "id": "5", "title": "Eggs" }
-  ]
+  "grocery-list": [
+    {
+      "name": "Testo",
+      "quantity": 2,
+      "id": "45ZD1G_kvxo",
+      "isBought": true
+    },
+    {
+      "name": "Juice",
+      "quantity": 7,
+      "id": "Ndz-pX0UIbc"
+    },
+    {
+      "name": "Testh",
+      "quantity": 1,
+      "isBought": true,
+      "id": "N2tohac8Wa0"
+    },
+    {
+      "name": "New up",
+      "quantity": 2,
+      "isBought": true,
+      "id": "NMpt2D3UfwQ"
+    },
+    {
+      "name": "Add",
+      "quantity": 111,
+      "id": "Toup44NJSys",
+      "isBought": true
+    }
+  ],
+  "$schema": "./node_modules/json-server/schema.json"
 }

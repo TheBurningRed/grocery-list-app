@@ -1,1 +1,15 @@
-<p>grocery-list works!</p>
+@if (!groceryListItems().length) {
+    No items in the list yet
+}
+
+@for (item of groceryListItems(); track item.id) {
+    <div class="item">
+        <app-grocery-list-item
+                [item]="item"
+                (itemBoughtChanged)="itemBoughtChanged.emit($event)"
+                (itemQuantityChanged)="itemQuantityChanged.emit({item, quantity: $event})"
+                (itemDeleteClicked)="itemDeleteClicked.emit(item)"
+                (itemEditClicked)="itemEditClicked.emit(item)">
+        </app-grocery-list-item>
+    </div>
+}

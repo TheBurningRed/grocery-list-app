@@ -17,7 +17,8 @@
         "assets": [
           {
             "glob": "**/*",
-            "input": "apps/grocery-list/public"
+            "input": "apps/grocery-list/public",
+            "ignore": ["db.json"]
           }
         ],
         "styles": ["apps/grocery-list/src/styles.scss"]

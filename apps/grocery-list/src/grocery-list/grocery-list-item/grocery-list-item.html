@@ -1,1 +1,28 @@
-<p>grocery-list-item works!</p>
+<div class="list-item">
+    <div class="left">
+        <mat-checkbox
+                [checked]="item().isBought"
+                (change)="isBoughtChanged($event.checked)">
+        </mat-checkbox>
+        <span class="name" [class.strikethrough]="item().isBought">
+            {{item().name}}
+        </span>
+    </div>
+    <div class="right">
+        <div class="quantity-row">
+            <button matIconButton (click)="itemQuantityChanged.emit(item().quantity - 1)">
+                <mat-icon>remove</mat-icon>
+            </button>
+            <span>{{item().quantity}}</span>
+            <button matIconButton (click)="itemQuantityChanged.emit(item().quantity + 1)">
+                <mat-icon>add</mat-icon>
+            </button>
+        </div>
+        <button matButton (click)="itemEditClicked.emit(item())">
+            Edit
+        </button>
+        <button matButton (click)="itemDeleteClicked.emit(item())">
+            Delete
+        </button>
+    </div>
+</div>
