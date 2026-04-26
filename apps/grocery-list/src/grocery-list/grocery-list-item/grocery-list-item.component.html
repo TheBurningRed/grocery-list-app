@@ -1,47 +1,52 @@
 <div class="list-item">
-    <div class="left">
-        <mat-checkbox
-                [checked]="item().isBought"
-                [attr.aria-label]="'Mark ' + item().name + ' as bought'"
-                (change)="isBoughtChanged($event.checked)">
-        </mat-checkbox>
-        <span class="name" [class.strikethrough]="item().isBought">
-            {{item().name}}
-        </span>
+  <div class="left">
+    <mat-checkbox
+      [checked]="item().isBought"
+      [attr.aria-label]="'Mark ' + item().name + ' as bought'"
+      (change)="isBoughtChanged($event.checked)"
+    >
+    </mat-checkbox>
+    <span class="name" [class.strikethrough]="item().isBought">
+      {{ item().name }}
+    </span>
+  </div>
+  <div class="right">
+    <div class="quantity-row" [attr.aria-label]="'Quantity for ' + item().name">
+      <button
+        matIconButton
+        type="button"
+        [attr.aria-label]="'Decrease quantity of ' + item().name"
+        (click)="itemQuantityChanged.emit(item().quantity - 1)"
+      >
+        <mat-icon aria-hidden="true">remove</mat-icon>
+      </button>
+      <span aria-live="polite" [attr.aria-label]="'Quantity: ' + item().quantity">
+        {{ item().quantity }}
+      </span>
+      <button
+        matIconButton
+        type="button"
+        [attr.aria-label]="'Increase quantity of ' + item().name"
+        (click)="itemQuantityChanged.emit(item().quantity + 1)"
+      >
+        <mat-icon aria-hidden="true">add</mat-icon>
+      </button>
     </div>
-    <div class="right">
-        <div class="quantity-row" [attr.aria-label]="'Quantity for ' + item().name">
-            <button
-                matIconButton
-                type="button"
-                [attr.aria-label]="'Decrease quantity of ' + item().name"
-                (click)="itemQuantityChanged.emit(item().quantity - 1)">
-                <mat-icon aria-hidden="true">remove</mat-icon>
-            </button>
-            <span aria-live="polite" [attr.aria-label]="'Quantity: ' + item().quantity">
-                {{item().quantity}}
-            </span>
-            <button
-                    matIconButton
-                    type="button"
-                    [attr.aria-label]="'Increase quantity of ' + item().name"
-                    (click)="itemQuantityChanged.emit(item().quantity + 1)">
-                <mat-icon aria-hidden="true">add</mat-icon>
-            </button>
-        </div>
-        <button
-                matButton
-                type="button"
-                [attr.aria-label]="'Edit ' + item().name"
-                (click)="itemEditClicked.emit(item())">
-            Edit
-        </button>
-        <button
-                matButton
-                type="button"
-                [attr.aria-label]="'Delete ' + item().name"
-                (click)="itemDeleteClicked.emit(item())">
-            Delete
-        </button>
-    </div>
+    <button
+      matButton
+      type="button"
+      [attr.aria-label]="'Edit ' + item().name"
+      (click)="itemEditClicked.emit(item())"
+    >
+      Edit
+    </button>
+    <button
+      matButton
+      type="button"
+      [attr.aria-label]="'Delete ' + item().name"
+      (click)="itemDeleteClicked.emit(item())"
+    >
+      Delete
+    </button>
+  </div>
 </div>

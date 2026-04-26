@@ -1,15 +1,15 @@
 <h2 mat-dialog-title>{{ data.title }}</h2>
 
 <mat-dialog-content>
-    {{ data.message }}
+  {{ data.message }}
 </mat-dialog-content>
 
 <mat-dialog-actions align="end">
-    <button matButton="text" type="button" (click)="dialogRef.close(false)">
-        {{ data.cancelText ?? 'Cancel' }}
-    </button>
+  <button matButton="text" type="button" (click)="dialogRef.close(false)">
+    {{ data.cancelText ?? 'Cancel' }}
+  </button>
 
-    <button matButton="filled" type="button" color="warn" (click)="dialogRef.close(true)">
-        {{ data.confirmText ?? 'Delete' }}
-    </button>
+  <button matButton="filled" type="button" color="warn" (click)="dialogRef.close(true)">
+    {{ data.confirmText ?? 'Delete' }}
+  </button>
 </mat-dialog-actions>

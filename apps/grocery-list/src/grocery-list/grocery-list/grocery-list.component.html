@@ -1,33 +1,30 @@
 @if (loadState() === 'loading') {
-    <p class="list-state-message" aria-live="polite">
-        Loading grocery items…
-    </p>
+  <p class="list-state-message" aria-live="polite">Loading grocery items…</p>
 }
 
 @if (loadState() === 'error') {
-    <p class="list-state-message list-state-message--error" aria-live="assertive">
-        Could not load the grocery list. Please try again.
-    </p>
+  <p class="list-state-message list-state-message--error" aria-live="assertive">
+    Could not load the grocery list. Please try again.
+  </p>
 }
 
 @if (loadState() === 'loaded' && !groceryListItems().length) {
-    <p class="empty-list-message" aria-live="polite">
-        No items in the list yet
-    </p>
+  <p class="empty-list-message" aria-live="polite">No items in the list yet</p>
 }
 
 @if (loadState() === 'loaded' && groceryListItems().length) {
-    <ul class="grocery-list" aria-label="Grocery items">
-        @for (item of groceryListItems(); track item.id) {
-            <li class="item">
-                <app-grocery-list-item
-                    [item]="item"
-                    (itemBoughtChanged)="itemBoughtChanged.emit($event)"
-                    (itemQuantityChanged)="itemQuantityChanged.emit({item, quantity: $event})"
-                    (itemDeleteClicked)="itemDeleteClicked.emit(item)"
-                    (itemEditClicked)="itemEditClicked.emit(item)">
-                </app-grocery-list-item>
-            </li>
-        }
-    </ul>
+  <ul class="grocery-list" aria-label="Grocery items">
+    @for (item of groceryListItems(); track item.id) {
+      <li class="item">
+        <app-grocery-list-item
+          [item]="item"
+          (itemBoughtChanged)="itemBoughtChanged.emit($event)"
+          (itemQuantityChanged)="itemQuantityChanged.emit({ item, quantity: $event })"
+          (itemDeleteClicked)="itemDeleteClicked.emit(item)"
+          (itemEditClicked)="itemEditClicked.emit(item)"
+        >
+        </app-grocery-list-item>
+      </li>
+    }
+  </ul>
 }
