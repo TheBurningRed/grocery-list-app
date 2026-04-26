@@ -13,7 +13,10 @@
     "lib": ["es2020", "dom"],
     "skipLibCheck": true,
     "skipDefaultLibCheck": true,
-    "paths": {}
+    "paths": {
+      "interfaces": ["./libs/interfaces/src/index.ts"],
+      "api-client": ["./libs/api-client/src/index.ts"]
+    }
   },
   "exclude": ["node_modules", "tmp"]
 }

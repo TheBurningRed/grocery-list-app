@@ -3,6 +3,7 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
+    "start": "nx serve grocery-list | npx json-server apps/grocery-list/public/db.json -p 3001",
     "prepare": "husky",
     "lint": "nx run-many -t lint"
   },
@@ -47,13 +48,15 @@
     "vitest": "^4.0.8"
   },
   "dependencies": {
-    "24": "^0.0.0",
+    "@angular/cdk": "^21.2.8",
     "@angular/common": "~21.2.0",
     "@angular/compiler": "~21.2.0",
     "@angular/core": "~21.2.0",
     "@angular/forms": "~21.2.0",
+    "@angular/material": "^21.2.8",
     "@angular/platform-browser": "~21.2.0",
     "@angular/router": "~21.2.0",
+    "json-server": "^1.0.0-beta.15",
     "rxjs": "~7.8.0"
   }
 }

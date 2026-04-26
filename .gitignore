@@ -68,3 +68,5 @@ pnpm-debug.log*
 # Misc local files
 *.local
 
+
+.angular

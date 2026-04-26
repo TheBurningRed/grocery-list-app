@@ -1,0 +1,10 @@
+{
+  "$schema": "../../../node_modules/json-server/schema.json",
+  "products": [
+    { "id": "1", "name": "Apple" },
+    { "id": "2", "title": "Milk" },
+    { "id": "3", "title": "Juice" },
+    { "id": "4", "title": "Bread" },
+    { "id": "5", "title": "Eggs" }
+  ]
+}
