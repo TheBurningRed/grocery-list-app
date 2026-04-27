@@ -34,6 +34,7 @@ App is accessible at `http://localhost:4200`
 # Key features
 - Working grocery list with CRUD operations connected to json-server
 - Shipped within nx monorepo with reusable interfaces and api-client libraries
+- Includes Eslint and Prettier configuration
 - Facade service for managing the grocery list, ready to be migrated to NgRx if necessary.
 - Error/loading states handling
 - Optimistic updates for changing items quantity with rollback
