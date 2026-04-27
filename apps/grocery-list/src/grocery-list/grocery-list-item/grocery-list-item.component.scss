@@ -1,0 +1,29 @@
+.list-item {
+  display: flex;
+  align-items: center;
+  padding: 12px;
+  justify-content: space-between;
+
+  .left,
+  .right {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+}
+
+.name {
+  max-width: 600px;
+  overflow-wrap: break-word;
+}
+
+.strikethrough {
+  text-decoration: line-through;
+}
+
+.quantity-row {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
+}

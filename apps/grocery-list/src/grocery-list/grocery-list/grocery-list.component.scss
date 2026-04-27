@@ -1,0 +1,19 @@
+.grocery-list {
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+
+.item:nth-child(odd) {
+  background: #eee;
+}
+
+.list-state-message,
+.empty-list-message {
+  margin: 16px 0;
+  color: #666;
+}
+
+.list-state-message--error {
+  color: #b00020;
+}

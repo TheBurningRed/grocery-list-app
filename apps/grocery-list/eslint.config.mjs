@@ -125,7 +125,6 @@ export default [
       '@angular-eslint/template/mouse-events-have-key-events': 'warn',
       '@angular-eslint/template/no-any': 'warn',
       '@angular-eslint/template/no-autofocus': 'warn',
-      '@angular-eslint/template/no-call-expression': 'warn',
       '@angular-eslint/template/no-distracting-elements': 'error',
       '@angular-eslint/template/no-duplicate-attributes': 'error',
       '@angular-eslint/template/no-inline-styles': 'warn',
