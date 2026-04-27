@@ -1,6 +1,6 @@
 # Grocery List App
 
-Angular grocery list application built in an Nx monorepo. The app uses a mock REST API powered by `json-server` and includes reusable libraries for shared interfaces and API access.
+Goji Labs test task: Angular grocery list application built in an Nx monorepo. The app uses a mock REST API powered by `json-server` and includes reusable libraries for shared interfaces and API access.
 
 ## Prerequisites
 
