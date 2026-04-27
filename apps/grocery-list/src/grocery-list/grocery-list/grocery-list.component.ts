@@ -3,7 +3,11 @@ import { GroceryListItem } from 'interfaces';
 import { GroceryListItemComponent } from '../grocery-list-item/grocery-list-item.component';
 import { GroceryItemQuantityUpdate } from '../grocery-list-item-quantity-update.interface';
 
-export type GroceryListLoadState = 'loading' | 'loaded' | 'error';
+export enum GroceryListLoadState {
+  LOADING = 'loading',
+  LOADED = 'loaded',
+  ERROR = 'error',
+}
 
 @Component({
   selector: 'app-grocery-list',

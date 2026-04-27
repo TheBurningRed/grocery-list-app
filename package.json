@@ -5,7 +5,11 @@
   "scripts": {
     "start": "concurrently \"nx serve grocery-list\" \"json-server apps/grocery-list/public/db.json -p 3001\"",
     "start:app": "nx serve grocery-list",
-    "start:api": "json-server apps/grocery-list/public/db.json -p 3001"
+    "start:api": "json-server apps/grocery-list/public/db.json -p 3001",
+    "test": "nx test grocery-list",
+    "lint": "nx lint grocery-list",
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
   },
   "lint-staged": {
     "*.{ts,tsx,js,jsx,mjs,cjs}": "eslint --max-warnings=0"

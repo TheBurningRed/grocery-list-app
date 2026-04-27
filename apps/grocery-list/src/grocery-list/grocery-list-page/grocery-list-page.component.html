@@ -15,17 +15,24 @@
       </div>
     </mat-card-header>
     <mat-card-content>
-      <section aria-labelledby="grocery-list-title">
-        <app-grocery-list
-          [groceryListItems]="groceryList()"
-          [loadState]="groceryListLoadState()"
-          (itemQuantityChanged)="updateItemQuantity($event)"
-          (itemBoughtChanged)="updateItemIsBought($event)"
-          (itemDeleteClicked)="deleteItemDialog($event)"
-          (itemEditClicked)="editItemDialog($event)"
-        >
-        </app-grocery-list>
-      </section>
+        @switch (groceryListLoadState()) {
+            @case (GroceryListLoadState.LOADING) {
+                <p>Loading...</p>
+            }
+            @case (GroceryListLoadState.LOADED) {
+                <app-grocery-list
+                        [groceryListItems]="groceryList()"
+                        [loadState]="groceryListLoadState()"
+                        (itemBoughtChanged)="updateItemIsBought($event)"
+                        (itemDeleteClicked)="deleteItemDialog($event)"
+                        (itemEditClicked)="editItemDialog($event)"
+                        (itemQuantityChanged)="updateItemQuantity($event)"
+                ></app-grocery-list>
+            }
+            @case (GroceryListLoadState.ERROR) {
+                <p>Could not load the grocery list.</p>
+            }
+        }
     </mat-card-content>
   </mat-card>
 </main>

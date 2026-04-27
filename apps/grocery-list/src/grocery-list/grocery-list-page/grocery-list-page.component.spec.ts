@@ -1,30 +1,31 @@
+import { signal } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { MatDialog } from '@angular/material/dialog';
-import { MatSnackBar } from '@angular/material/snack-bar';
+import { By } from '@angular/platform-browser';
 import { GroceryListItem } from 'interfaces';
-import { of, throwError } from 'rxjs';
+import { of } from 'rxjs';
 
 import { ConfirmDialogComponent } from '../../confirm-dialog/confirm-dialog.component';
+import { GroceryListComponent, GroceryListLoadState } from '../grocery-list/grocery-list.component';
 import { GroceryListItemEditDialogComponent } from '../grocery-list-item-edit-dialog/grocery-list-item-edit-dialog.component';
-import { GroceryListService } from '../grocery-list.service';
+import { GroceryListPageFacade } from '../grocery-list-page-facade';
 import { GroceryListPageComponent } from './grocery-list-page.component';
 
 describe('GroceryListPageComponent', () => {
   let component: GroceryListPageComponent;
   let fixture: ComponentFixture<GroceryListPageComponent>;
 
-  let groceryListService: {
-    fetchGroceryList: ReturnType<typeof vi.fn>;
-    updateGroceryListItem: ReturnType<typeof vi.fn>;
-    createGroceryListItem: ReturnType<typeof vi.fn>;
-    deleteGroceryListItem: ReturnType<typeof vi.fn>;
+  let facade: {
+    groceryList: ReturnType<typeof signal<GroceryListItem[]>>;
+    groceryListLoadState: ReturnType<typeof signal<GroceryListLoadState>>;
+    loadGroceryList: ReturnType<typeof vi.fn>;
+    createItem: ReturnType<typeof vi.fn>;
+    updateItem: ReturnType<typeof vi.fn>;
+    deleteItem: ReturnType<typeof vi.fn>;
+    updateItemQuantity: ReturnType<typeof vi.fn>;
   };
 
   let dialog: {
-    open: ReturnType<typeof vi.fn>;
-  };
-
-  let snackBar: {
     open: ReturnType<typeof vi.fn>;
   };
 
@@ -36,128 +37,54 @@ describe('GroceryListPageComponent', () => {
   };
 
   beforeEach(async () => {
-    groceryListService = {
-      fetchGroceryList: vi.fn().mockReturnValue(of([groceryItem])),
-      updateGroceryListItem: vi.fn().mockReturnValue(of(void 0)),
-      createGroceryListItem: vi.fn().mockReturnValue(of(void 0)),
-      deleteGroceryListItem: vi.fn().mockReturnValue(of(void 0)),
+    facade = {
+      groceryList: signal([groceryItem]),
+      groceryListLoadState: signal(GroceryListLoadState.LOADED),
+      loadGroceryList: vi.fn(),
+      createItem: vi.fn(),
+      updateItem: vi.fn(),
+      deleteItem: vi.fn(),
+      updateItemQuantity: vi.fn(),
     };
 
     dialog = {
       open: vi.fn(),
     };
 
-    snackBar = {
-      open: vi.fn(),
-    };
-
     await TestBed.configureTestingModule({
       imports: [GroceryListPageComponent],
-      providers: [
-        { provide: GroceryListService, useValue: groceryListService },
-        { provide: MatDialog, useValue: dialog },
-        { provide: MatSnackBar, useValue: snackBar },
-      ],
-    }).compileComponents();
+      providers: [{ provide: MatDialog, useValue: dialog }],
+    })
+      .overrideComponent(GroceryListPageComponent, {
+        set: {
+          providers: [{ provide: GroceryListPageFacade, useValue: facade }],
+        },
+      })
+      .compileComponents();
 
     fixture = TestBed.createComponent(GroceryListPageComponent);
     component = fixture.componentInstance;
-  });
-
-  afterEach(() => {
-    vi.useRealTimers();
   });
 
   it('should create', () => {
     expect(component).toBeTruthy();
   });
 
-  it('should fetch grocery list on init', () => {
+  it('should load grocery list on init', () => {
     fixture.detectChanges();
 
-    expect(groceryListService.fetchGroceryList).toHaveBeenCalled();
+    expect(facade.loadGroceryList).toHaveBeenCalledTimes(1);
+  });
+
+  it('should expose facade grocery list signal', () => {
     expect(component.groceryList()).toEqual([groceryItem]);
   });
 
-  it('should show an error when fetching grocery list fails', () => {
-    groceryListService.fetchGroceryList.mockReturnValue(throwError(() => new Error('Failed')));
-
-    fixture.detectChanges();
-
-    expect(snackBar.open).toHaveBeenCalledTimes(1);
-    expect(snackBar.open).toHaveBeenCalledWith('Could not load the grocery list.', 'Dismiss', {
-      duration: 5000,
-    });
+  it('should expose facade grocery list load state signal', () => {
+    expect(component.groceryListLoadState()).toBe(GroceryListLoadState.LOADED);
   });
 
-  it('should update item quantity optimistically and debounce save', async () => {
-    vi.useFakeTimers();
-
-    component.groceryList.set([groceryItem]);
-    component.ngOnInit();
-
-    component.updateItemQuantity({
-      item: groceryItem,
-      quantity: 5,
-    });
-
-    expect(component.groceryList()).toEqual([
-      {
-        ...groceryItem,
-        quantity: 5,
-      },
-    ]);
-
-    await vi.advanceTimersByTimeAsync(500);
-
-    expect(groceryListService.updateGroceryListItem).toHaveBeenCalledWith({
-      ...groceryItem,
-      quantity: 5,
-    });
-  });
-
-  it('should not allow item quantity below one', async () => {
-    vi.useFakeTimers();
-
-    component.groceryList.set([groceryItem]);
-    component.ngOnInit();
-
-    component.updateItemQuantity({
-      item: groceryItem,
-      quantity: 0,
-    });
-
-    await vi.advanceTimersByTimeAsync(500);
-
-    expect(component.groceryList()).toEqual([
-      {
-        ...groceryItem,
-        quantity: 1,
-      },
-    ]);
-    expect(groceryListService.updateGroceryListItem).toHaveBeenCalledWith({
-      ...groceryItem,
-      quantity: 1,
-    });
-  });
-
-  it('should update bought state and trigger grocery list refresh', () => {
-    const refreshSpy = vi.spyOn(component['groceriesUpdated$'], 'next');
-
-    component.updateItemIsBought({
-      ...groceryItem,
-      isBought: true,
-    });
-
-    expect(groceryListService.updateGroceryListItem).toHaveBeenCalledTimes(1);
-    expect(groceryListService.updateGroceryListItem).toHaveBeenCalledWith({
-      ...groceryItem,
-      isBought: true,
-    });
-    expect(refreshSpy).toHaveBeenCalledTimes(1);
-  });
-
-  it('should open edit dialog and update item after dialog closes with a result', () => {
+  it('should open edit dialog and delegate update item after dialog closes with a result', () => {
     const updatedItem: GroceryListItem = {
       ...groceryItem,
       name: 'Oat milk',
@@ -167,30 +94,27 @@ describe('GroceryListPageComponent', () => {
       afterClosed: () => of(updatedItem),
     });
 
-    const refreshSpy = vi.spyOn(component['groceriesUpdated$'], 'next');
-
     component.editItemDialog(groceryItem);
 
     expect(dialog.open).toHaveBeenCalledTimes(1);
     expect(dialog.open).toHaveBeenCalledWith(GroceryListItemEditDialogComponent, {
       data: { ...groceryItem },
     });
-    expect(groceryListService.updateGroceryListItem).toHaveBeenCalledTimes(1);
-    expect(groceryListService.updateGroceryListItem).toHaveBeenCalledWith(updatedItem);
-    expect(refreshSpy).toHaveBeenCalledTimes(1);
+    expect(facade.updateItem).toHaveBeenCalledTimes(1);
+    expect(facade.updateItem).toHaveBeenCalledWith(updatedItem);
   });
 
-  it('should not update item when edit dialog is cancelled', () => {
+  it('should not delegate update item when edit dialog is cancelled', () => {
     dialog.open.mockReturnValue({
       afterClosed: () => of(undefined),
     });
 
     component.editItemDialog(groceryItem);
 
-    expect(groceryListService.updateGroceryListItem).not.toHaveBeenCalled();
+    expect(facade.updateItem).not.toHaveBeenCalled();
   });
 
-  it('should open create dialog and create item after dialog closes with a result', () => {
+  it('should open create dialog and delegate create item after dialog closes with a result', () => {
     const newItem = {
       name: 'Bread',
       quantity: 1,
@@ -201,35 +125,30 @@ describe('GroceryListPageComponent', () => {
       afterClosed: () => of(newItem),
     });
 
-    const refreshSpy = vi.spyOn(component['groceriesUpdated$'], 'next');
-
     component.createItemDialog();
 
     expect(dialog.open).toHaveBeenCalledTimes(1);
     expect(dialog.open).toHaveBeenCalledWith(GroceryListItemEditDialogComponent, {
       data: { name: '', quantity: 1, isBought: false },
     });
-    expect(groceryListService.createGroceryListItem).toHaveBeenCalledTimes(1);
-    expect(groceryListService.createGroceryListItem).toHaveBeenCalledWith(newItem);
-    expect(refreshSpy).toHaveBeenCalledTimes(1);
+    expect(facade.createItem).toHaveBeenCalledTimes(1);
+    expect(facade.createItem).toHaveBeenCalledWith(newItem);
   });
 
-  it('should not create item when create dialog is cancelled', () => {
+  it('should not delegate create item when create dialog is cancelled', () => {
     dialog.open.mockReturnValue({
       afterClosed: () => of(undefined),
     });
 
     component.createItemDialog();
 
-    expect(groceryListService.createGroceryListItem).not.toHaveBeenCalled();
+    expect(facade.createItem).not.toHaveBeenCalled();
   });
 
-  it('should open confirmation dialog and delete item when confirmed', () => {
+  it('should open confirmation dialog and delegate delete item when confirmed', () => {
     dialog.open.mockReturnValue({
       afterClosed: () => of(true),
     });
-
-    const refreshSpy = vi.spyOn(component['groceriesUpdated$'], 'next');
 
     component.deleteItemDialog(groceryItem);
 
@@ -242,235 +161,177 @@ describe('GroceryListPageComponent', () => {
         cancelText: 'Cancel',
       },
     });
-    expect(groceryListService.deleteGroceryListItem).toHaveBeenCalledTimes(1);
-    expect(groceryListService.deleteGroceryListItem).toHaveBeenCalledWith(groceryItem);
-    expect(refreshSpy).toHaveBeenCalledTimes(1);
+    expect(facade.deleteItem).toHaveBeenCalledTimes(1);
+    expect(facade.deleteItem).toHaveBeenCalledWith(groceryItem);
   });
 
-  it('should not delete item when confirmation dialog is cancelled', () => {
+  it('should not delegate delete item when confirmation dialog is cancelled', () => {
     dialog.open.mockReturnValue({
       afterClosed: () => of(false),
     });
 
     component.deleteItemDialog(groceryItem);
 
-    expect(groceryListService.deleteGroceryListItem).not.toHaveBeenCalled();
+    expect(facade.deleteItem).not.toHaveBeenCalled();
   });
 
-  it('should show an error when updating bought state fails', () => {
-    groceryListService.updateGroceryListItem.mockReturnValue(throwError(() => new Error('Failed')));
-
-    component.updateItemIsBought(groceryItem);
-
-    expect(snackBar.open).toHaveBeenCalledTimes(1);
-    expect(snackBar.open).toHaveBeenCalledWith('Could not update the grocery item.', 'Dismiss', {
-      duration: 5000,
-    });
-  });
-
-  it('should rollback quantity to the previous item state when latest quantity save fails', async () => {
-    vi.useFakeTimers();
-
-    const originalItem: GroceryListItem = {
-      ...groceryItem,
-      quantity: 2,
-    };
-
-    groceryListService.updateGroceryListItem.mockReturnValue(throwError(() => new Error('Failed')));
-
-    component.groceryList.set([originalItem]);
-    component.ngOnInit();
-
-    component.updateItemQuantity({
-      item: originalItem,
-      quantity: 5,
-    });
-
-    expect(component.groceryList()).toEqual([
-      {
-        ...originalItem,
-        quantity: 5,
-      },
-    ]);
-
-    await vi.advanceTimersByTimeAsync(500);
-
-    expect(component.groceryList()).toEqual([originalItem]);
-    expect(snackBar.open).toHaveBeenCalledWith('Could not update the item quantity.', 'Dismiss', {
-      duration: 5000,
-    });
-  });
-
-  it('should not trigger full grocery list refresh when quantity rollback data exists', async () => {
-    vi.useFakeTimers();
-
-    const refreshSpy = vi.spyOn(component['groceriesUpdated$'], 'next');
-
-    groceryListService.updateGroceryListItem.mockReturnValue(throwError(() => new Error('Failed')));
-
-    component.groceryList.set([groceryItem]);
-    component.ngOnInit();
-
-    component.updateItemQuantity({
+  it('should delegate quantity updates to the facade', () => {
+    const update = {
       item: groceryItem,
       quantity: 5,
-    });
+    };
 
-    await vi.advanceTimersByTimeAsync(500);
+    component.updateItemQuantity(update);
 
-    expect(refreshSpy).not.toHaveBeenCalled();
-    expect(snackBar.open).toHaveBeenCalledWith('Could not update the item quantity.', 'Dismiss', {
-      duration: 5000,
-    });
+    expect(facade.updateItemQuantity).toHaveBeenCalledTimes(1);
+    expect(facade.updateItemQuantity).toHaveBeenCalledWith(update);
   });
 
-  it('should fall back to full grocery list refresh when quantity rollback data is missing', async () => {
-    vi.useFakeTimers();
-
-    const refreshSpy = vi.spyOn(component['groceriesUpdated$'], 'next');
-
-    groceryListService.updateGroceryListItem.mockReturnValue(throwError(() => new Error('Failed')));
-
-    component.groceryList.set([groceryItem]);
-    component.ngOnInit();
-
-    component.updateItemQuantity({
-      item: groceryItem,
-      quantity: 5,
-    });
-
-    component['quantityUpdateRollbackMap'].delete(groceryItem.id);
-
-    await vi.advanceTimersByTimeAsync(500);
-
-    expect(refreshSpy).toHaveBeenCalledTimes(1);
-    expect(snackBar.open).toHaveBeenCalledWith('Could not update the item quantity.', 'Dismiss', {
-      duration: 5000,
-    });
-  });
-
-  it('should save only the latest quantity after rapid updates for the same item', async () => {
-    vi.useFakeTimers();
-
-    const originalItem: GroceryListItem = {
+  it('should delegate bought-state updates to the facade', () => {
+    const updatedItem: GroceryListItem = {
       ...groceryItem,
-      quantity: 2,
+      isBought: true,
     };
 
-    component.groceryList.set([originalItem]);
-    component.ngOnInit();
+    component.updateItemIsBought(updatedItem);
 
-    component.updateItemQuantity({
-      item: originalItem,
-      quantity: 3,
+    expect(facade.updateItem).toHaveBeenCalledWith(updatedItem);
+  });
+
+  it('should render loading state', () => {
+    facade.groceryListLoadState.set(GroceryListLoadState.LOADING);
+
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.textContent).toContain('Loading...');
+    expect(fixture.debugElement.query(By.directive(GroceryListComponent))).toBeNull();
+  });
+
+  it('should render error state', () => {
+    facade.groceryListLoadState.set(GroceryListLoadState.ERROR);
+
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.textContent).toContain('Could not load the grocery list.');
+    expect(fixture.debugElement.query(By.directive(GroceryListComponent))).toBeNull();
+  });
+
+  it('should render empty list state', () => {
+    facade.groceryList.set([]);
+    facade.groceryListLoadState.set(GroceryListLoadState.LOADED);
+
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.textContent).toContain('No items in the list yet');
+  });
+
+  it('should render grocery list items', () => {
+    facade.groceryList.set([groceryItem]);
+    facade.groceryListLoadState.set(GroceryListLoadState.LOADED);
+
+    fixture.detectChanges();
+
+    const groceryList = fixture.debugElement.query(By.directive(GroceryListComponent));
+
+    expect(groceryList).not.toBeNull();
+    expect(groceryList.componentInstance.groceryListItems()).toEqual([groceryItem]);
+    expect(fixture.nativeElement.textContent).toContain('Milk');
+  });
+
+  it('should open create item dialog when add item button is clicked', () => {
+    dialog.open.mockReturnValue({
+      afterClosed: () => of(undefined),
     });
 
-    component.updateItemQuantity({
-      item: {
-        ...originalItem,
-        quantity: 3,
-      },
-      quantity: 4,
-    });
+    fixture.detectChanges();
 
-    component.updateItemQuantity({
-      item: {
-        ...originalItem,
-        quantity: 4,
-      },
-      quantity: 5,
-    });
+    const addButton = fixture.debugElement.query(
+      By.css('button[aria-label="Add a new grocery item"]'),
+    );
 
-    await vi.advanceTimersByTimeAsync(500);
+    addButton.triggerEventHandler('click');
 
-    expect(groceryListService.updateGroceryListItem).toHaveBeenCalledTimes(1);
-    expect(groceryListService.updateGroceryListItem).toHaveBeenCalledWith({
-      ...originalItem,
-      quantity: 5,
+    expect(dialog.open).toHaveBeenCalledTimes(1);
+    expect(dialog.open).toHaveBeenCalledWith(GroceryListItemEditDialogComponent, {
+      data: { name: '', quantity: 1, isBought: false },
     });
   });
 
-  it('should keep quantity updates for different items independent', async () => {
-    vi.useFakeTimers();
+  it('should wire edit events from the grocery list child component', () => {
+    dialog.open.mockReturnValue({
+      afterClosed: () => of(undefined),
+    });
 
-    const breadItem: GroceryListItem = {
-      id: '2',
-      name: 'Bread',
-      quantity: 1,
-      isBought: false,
-    };
+    fixture.detectChanges();
 
-    component.groceryList.set([groceryItem, breadItem]);
-    component.ngOnInit();
+    const groceryList = fixture.debugElement.query(By.directive(GroceryListComponent));
 
-    component.updateItemQuantity({
+    groceryList.triggerEventHandler('itemEditClicked', groceryItem);
+
+    expect(dialog.open).toHaveBeenCalledTimes(1);
+    expect(dialog.open).toHaveBeenCalledWith(GroceryListItemEditDialogComponent, {
+      data: { ...groceryItem },
+    });
+  });
+
+  it('should wire delete events from the grocery list child component', () => {
+    dialog.open.mockReturnValue({
+      afterClosed: () => of(false),
+    });
+
+    fixture.detectChanges();
+
+    const groceryList = fixture.debugElement.query(By.directive(GroceryListComponent));
+
+    groceryList.triggerEventHandler('itemDeleteClicked', groceryItem);
+
+    expect(dialog.open).toHaveBeenCalledTimes(1);
+    expect(dialog.open).toHaveBeenCalledWith(ConfirmDialogComponent, {
+      data: {
+        title: 'Delete item',
+        message: 'Are you sure you want to delete "Milk"?',
+        confirmText: 'Delete',
+        cancelText: 'Cancel',
+      },
+    });
+  });
+
+  it('should render accessibility-visible labels and text', () => {
+    fixture.detectChanges();
+
+    const addButton = fixture.debugElement.query(
+      By.css('button[aria-label="Add a new grocery item"]'),
+    );
+    const groceryList = fixture.debugElement.query(By.css('ul[aria-label="Grocery items"]'));
+
+    expect(fixture.nativeElement.textContent).toContain('My groceries list');
+    expect(fixture.nativeElement.textContent).toContain('Add item');
+    expect(addButton).not.toBeNull();
+    expect(groceryList).not.toBeNull();
+  });
+
+  it('should pass child quantity and bought-state events through to the facade', () => {
+    fixture.detectChanges();
+
+    const groceryList = fixture.debugElement.query(By.directive(GroceryListComponent));
+
+    groceryList.triggerEventHandler('itemQuantityChanged', {
       item: groceryItem,
       quantity: 3,
     });
 
-    component.updateItemQuantity({
-      item: breadItem,
-      quantity: 4,
+    groceryList.triggerEventHandler('itemBoughtChanged', {
+      ...groceryItem,
+      isBought: true,
     });
 
-    await vi.advanceTimersByTimeAsync(500);
-
-    expect(groceryListService.updateGroceryListItem).toHaveBeenCalledTimes(2);
-    expect(groceryListService.updateGroceryListItem).toHaveBeenCalledWith({
-      ...groceryItem,
+    expect(facade.updateItemQuantity).toHaveBeenCalledWith({
+      item: groceryItem,
       quantity: 3,
     });
-    expect(groceryListService.updateGroceryListItem).toHaveBeenCalledWith({
-      ...breadItem,
-      quantity: 4,
+    expect(facade.updateItem).toHaveBeenCalledWith({
+      ...groceryItem,
+      isBought: true,
     });
-  });
-
-  it('should not rollback current quantity when handling a stale quantity update failure', () => {
-    const originalItem: GroceryListItem = {
-      ...groceryItem,
-      quantity: 2,
-    };
-
-    const newerItem: GroceryListItem = {
-      ...groceryItem,
-      quantity: 5,
-    };
-
-    component.groceryList.set([newerItem]);
-    component['quantityUpdateRollbackMap'].set(groceryItem.id, originalItem);
-    component['quantityUpdateVersionMap'].set(groceryItem.id, 2);
-
-    component['handleQuantityUpdateError'](
-      'Could not update the item quantity.',
-      groceryItem.id,
-      1,
-    ).subscribe();
-
-    expect(component.groceryList()).toEqual([newerItem]);
-  });
-
-  it('should not clear rollback data when handling a stale quantity update failure', () => {
-    const originalItem: GroceryListItem = {
-      ...groceryItem,
-      quantity: 2,
-    };
-
-    const newerItem: GroceryListItem = {
-      ...groceryItem,
-      quantity: 5,
-    };
-
-    component.groceryList.set([newerItem]);
-    component['quantityUpdateRollbackMap'].set(groceryItem.id, originalItem);
-    component['quantityUpdateVersionMap'].set(groceryItem.id, 2);
-
-    component['handleQuantityUpdateError'](
-      'Could not update the item quantity.',
-      groceryItem.id,
-      1,
-    ).subscribe();
-
-    expect(component['quantityUpdateRollbackMap'].get(groceryItem.id)).toEqual(originalItem);
   });
 });

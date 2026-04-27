@@ -1,35 +1,4 @@
 {
-  "grocery-list": [
-    {
-      "name": "Test1",
-      "quantity": 3,
-      "isBought": true,
-      "id": "45ZD1G_kvxo"
-    },
-    {
-      "name": "Juice2",
-      "quantity": 2,
-      "isBought": false,
-      "id": "Ndz-pX0UIbc"
-    },
-    {
-      "name": "Test2",
-      "quantity": 11,
-      "isBought": false,
-      "id": "N2tohac8Wa0"
-    },
-    {
-      "name": "New up",
-      "quantity": 2,
-      "isBought": true,
-      "id": "NMpt2D3UfwQ"
-    },
-    {
-      "name": "Add",
-      "quantity": 14,
-      "isBought": true,
-      "id": "Toup44NJSys"
-    }
-  ],
+  "grocery-list": [],
   "$schema": "./node_modules/json-server/schema.json"
 }
