@@ -7,9 +7,6 @@ Goji Labs test task: Angular grocery list application built in an Nx monorepo. T
 - Node.js
 - npm
 
-## Setup
-
-Install dependencies:
 
 ## Setup
 
